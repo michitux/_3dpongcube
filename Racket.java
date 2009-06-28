@@ -15,8 +15,8 @@ class Racket extends Side {
 
   private Side side;
   private Score score = new Score();
-  private AudioPlayer hit = minim.loadFile("/usr/share/sounds/pop.wav", 2048);
-  private AudioPlayer miss = minim.loadFile("/usr/share/supertuxkart/data/sfx/wee.wav", 2048);
+  private AudioPlayer hit = minim.loadFile("pop.wav", 2048);
+  private AudioPlayer miss = minim.loadFile("wee.wav", 2048);
 
   public Racket(HardwareCube cube, final Side side, Minim minim, VisualCube.Color color) {
     super(cube, minim);
@@ -188,7 +188,7 @@ class Racket extends Side {
   class Score implements Element {
     int score = 0;
     public void increment() {
-      side.getPixel(0, score).setElement(this, new VisualCube.Color(150, 150, 150));
+      side.getPixel(0, score).setElement(this, baseColor);
       if (score < side.getHeight()-1) {
         score++;
       }
