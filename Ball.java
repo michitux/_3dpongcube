@@ -102,8 +102,8 @@ class Ball implements Element {
         removePixel();
         initRandom();
       } else if (collisionSide instanceof Racket) {
+        ((Racket)collisionSide).setTempColor(this.color, 700);
         lastCollision = collisionSide;
-        ((Racket)collisionSide).setColor(this.color);
       }
     }
   }

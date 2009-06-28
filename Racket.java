@@ -10,21 +10,23 @@ class Racket extends Side {
   volatile int topY;
   volatile int bottomY;
 
-  private volatile VisualCube.Color color = new VisualCube.Color(0, 0, 200);
+  private volatile VisualCube.Color color;
+  private VisualCube.Color baseColor;
 
   private Side side;
   private Score score = new Score();
   private AudioPlayer hit = minim.loadFile("/usr/share/sounds/pop.wav", 2048);
   private AudioPlayer miss = minim.loadFile("/usr/share/supertuxkart/data/sfx/wee.wav", 2048);
 
-  public Racket(HardwareCube cube, final Side side, Minim minim) {
+  public Racket(HardwareCube cube, final Side side, Minim minim, VisualCube.Color color) {
     super(cube, minim);
     this.side = side;
     this.leftX = side.getWidth()/3;
     this.rightX = side.getWidth()*2/3;
     this.bottomY = side.getHeight()/3;
     this.topY = side.getHeight()*2/3;
-    final Racket racket = this;
+    this.color = color;
+    this.baseColor = color;
     refresh();
 
   }
@@ -137,7 +139,7 @@ class Racket extends Side {
   }
 
   public synchronized void won() {
-    this.color = new VisualCube.Color(200, 200, 0);
+    this.setTempColor(new VisualCube.Color(200, 200, 0), 1500);
     score.increment();
     if (score.getScore() == (side.getHeight()-1)) {
       side.flash(new VisualCube.Color(0, 200, 0));
@@ -147,13 +149,26 @@ class Racket extends Side {
   }
   
   public synchronized void lost() {
-    this.color = new VisualCube.Color(0, 0, 200);
-    refresh();
   }
   
   public synchronized void setColor(VisualCube.Color color) {
     this.color = color;
     refresh();
+  }
+  
+  public void setTempColor(VisualCube.Color color, final int time) {
+    this.color = color;
+    refresh();
+    (new Thread(new Runnable() {
+      public void run() {
+        try {
+          Thread.sleep(time);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        reset();
+      }
+    })).start();
   }
   
   public void refresh() {
@@ -162,6 +177,12 @@ class Racket extends Side {
           side.getPixel(x, y).setElement(this, color);
          }
         }
+  }
+  
+  public void reset() {
+    super.reset();
+    this.color = this.baseColor;
+    refresh();
   }
   
   class Score implements Element {

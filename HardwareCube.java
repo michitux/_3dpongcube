@@ -23,12 +23,12 @@ class HardwareCube {
       }
     }
 
-    this.top = new Racket(this, new TopSide(this, minim), minim);
+    this.top = new Racket(this, new TopSide(this, minim), minim, new VisualCube.Color(100, 230, 30));
     this.left = new LeftSide(this, minim);
     this.right = new RightSide(this, minim);
-    this.bottom = new Racket(this, new BottomSide(this, minim), minim);
-    this.front = new Racket(this, new FrontSide(this, minim), minim);
-    this.back = new Racket(this, new BackSide(this, minim), minim);
+    this.bottom = new Racket(this, new BottomSide(this, minim), minim, new VisualCube.Color(240, 100, 20));
+    this.front = new Racket(this, new FrontSide(this, minim), minim, new VisualCube.Color(50, 150, 200));
+    this.back = new Racket(this, new BackSide(this, minim), minim, new VisualCube.Color(100, 20, 200));
     Ball ball = new Ball(this);
   }
   
