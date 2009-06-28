@@ -1,6 +1,11 @@
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+
 class BottomSide extends HorizontalSide {
-  public BottomSide(HardwareCube cube) {
-    super(cube);
+  public BottomSide(HardwareCube cube, Minim minim) {
+    super(cube, minim);
   }
 
   public HardwarePixel getPixel(int x, int y) {

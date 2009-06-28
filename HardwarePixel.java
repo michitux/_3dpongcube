@@ -5,7 +5,7 @@ import processing.visualcube1e3.device.*;
 
 import java.awt.Color;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 class HardwarePixel {
   int x;
@@ -13,7 +13,7 @@ class HardwarePixel {
   int z;
   VisualCube cube;
 
-  HashMap<Element, Color> elements = new HashMap<Element, Color>();
+  ConcurrentHashMap<Element, VisualCube.Color> elements = new ConcurrentHashMap<Element, VisualCube.Color>();
 
   public HardwarePixel(int x, int y, int z, VisualCube cube) {
     this.x = x;
@@ -22,13 +22,13 @@ class HardwarePixel {
     this.cube = cube;
   }
 
-  public void setElement(Element e, Color c) {
-    //elements.put(e, c);
+  public void setElement(Element e, VisualCube.Color c) {
+    elements.put(e, c);
     updatePixel();
   }
 
   public void removeElement(Element e) {
-    //elements.remove(e);
+    elements.remove(e);
     updatePixel();
   }
 
@@ -37,17 +37,21 @@ class HardwarePixel {
     int g = 0;
     int b = 0;
 
-    for (Color c : elements.values()) {
-      r += c.getRed();
-      g += c.getGreen();
-      b += c.getBlue();
+    for (VisualCube.Color c : elements.values()) {
+      r += c.r;
+      g += c.g;
+      b += c.b;
     }
 
-    r /= elements.size();
-    g /= elements.size();
-    b /= elements.size();
-    //cube.set(x, y, z, new VisualCube.Color(r, g, b));
-    //cube.update();
+    if (r > 255)
+       r = 255;
+    if (g > 255)
+       g = 255;
+    if (b > 255)
+       b = 255;
+
+    cube.set(x, y, z, new VisualCube.Color(r, g, b));
   }
+ 
 }
 

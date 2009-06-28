@@ -1,10 +1,15 @@
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+
 abstract class VerticalXSide extends Side {
-  public VerticalXSide(HardwareCube cube) {
-    super(cube);
+  public VerticalXSide(HardwareCube cube, Minim minim) {
+    super(cube, minim);
   }
 
-  public Vector reflect(Vector v) {
-   return new Vector(-v.getX(), v.getY(), v.getZ());
+  public Vector reflect(Vector v, Vector p) {
+   return new Vector(v.getX(), -v.getY(), v.getZ());
   }
 
   public int getWidth() {

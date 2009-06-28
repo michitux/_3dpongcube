@@ -1,3 +1,4 @@
+import java.util.Random;
 class Vector {
   int x;
   int y;
@@ -48,17 +49,21 @@ class Vector {
     return this.z;
   }
 
-  public void incrementInDirection(int count) {
+  public void incrementInDirection() {
+    Random random = new Random();
+    int count = random.nextInt(2) + 2;    
     if (this.x < 0) {
       this.x -= count;
     } else {
       this.x += count;
     }
+    count = random.nextInt(2) + 2;   
     if (this.y < 0) {
       this.y -= count;
     } else {
       this.y += count;
     }
+    count = random.nextInt(2) + 2;   
     if (this.z < 0) {
       this.z -= count;
     } else {

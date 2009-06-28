@@ -1,9 +1,14 @@
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+
 abstract class HorizontalSide extends Side {
-  public HorizontalSide(HardwareCube cube) {
-    super(cube);
+  public HorizontalSide(HardwareCube cube, Minim minim) {
+    super(cube, minim);
   }
 
-  public Vector reflect(Vector v) {
+  public Vector reflect(Vector v, Vector p) {
    return new Vector(v.getX(), v.getY(), -v.getZ());
   }
 

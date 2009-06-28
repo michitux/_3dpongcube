@@ -2,6 +2,8 @@ import processing.visualcube1e3.simulator.*;
 import processing.visualcube1e3.*;
 import processing.visualcube1e3.device.*;
 
+import ddf.minim.*;
+
 class HardwareCube {
   HardwarePixel[][][] pixels = new HardwarePixel[VisualCube.width][VisualCube.depth][VisualCube.height];
 
@@ -12,22 +14,29 @@ class HardwareCube {
   Side front;
   Side back;
 
-  public HardwareCube(VisualCube cube) {
+  public HardwareCube(VisualCube cube, Minim minim) {
     for (int i = 0; i < pixels.length; i++) {
       for (int j = 0; j < pixels[0].length; j++) {
         for (int k = 0; k < pixels[0][0].length; k++) {
-          System.out.println(i + " " + j + " " + k);
           pixels[i][j][k] = new HardwarePixel(i, j, k, cube);
         }
       }
     }
 
-    this.top = new TopSide(this);
-    this.left = new LeftSide(this);
-    this.right = new RightSide(this);
-    this.bottom = new BottomSide(this);
-    this.front = new FrontSide(this);
-    this.back = new BackSide(this);
+    this.top = new Racket(this, new TopSide(this, minim), minim);
+    this.left = new LeftSide(this, minim);
+    this.right = new RightSide(this, minim);
+    this.bottom = new Racket(this, new BottomSide(this, minim), minim);
+    this.front = new Racket(this, new FrontSide(this, minim), minim);
+    this.back = new Racket(this, new BackSide(this, minim), minim);
+    Ball ball = new Ball(this);
+  }
+  
+  public void gameFinished() {
+    ((Racket)this.top).getScore().reset();
+    ((Racket)this.bottom).getScore().reset();
+    ((Racket)this.front).getScore().reset();
+    ((Racket)this.back).getScore().reset();
   }
 
   public HardwarePixel getPixel(int x, int y, int z) {

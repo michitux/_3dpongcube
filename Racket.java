@@ -1,92 +1,117 @@
+import processing.visualcube1e3.simulator.*;
+import processing.visualcube1e3.*;
+import processing.visualcube1e3.device.*;
 
-import java.awt.Color;
+import ddf.minim.*;
 
 class Racket extends Side {
-  int leftX;
-  int rightX;
-  int topY;
-  int bottomY;
+  volatile int leftX;
+  volatile int rightX;
+  volatile int topY;
+  volatile int bottomY;
 
-  private Color color = Color.BLUE;
+  private volatile VisualCube.Color color = new VisualCube.Color(0, 0, 200);
 
   private Side side;
+  private Score score = new Score();
+  private AudioPlayer hit = minim.loadFile("/usr/share/sounds/pop.wav", 2048);
+  private AudioPlayer miss = minim.loadFile("/usr/share/supertuxkart/data/sfx/wee.wav", 2048);
 
-  public Racket(HardwareCube cube, Side side) {
-    super(cube);
+  public Racket(HardwareCube cube, final Side side, Minim minim) {
+    super(cube, minim);
     this.side = side;
     this.leftX = side.getWidth()/3;
     this.rightX = side.getWidth()*2/3;
     this.bottomY = side.getHeight()/3;
     this.topY = side.getHeight()*2/3;
+    final Racket racket = this;
+    refresh();
+
   }
 
-  public Vector reflect(Vector v) {
-    if (doesReflect(v)) {
-      return side.reflect(v);
+  public Score getScore() {
+    return score;
+  }
+  public synchronized Vector reflect(Vector v, Vector p) {
+    if (doesReflect(p)) {
+      (new Thread(new Runnable() {
+        public void run() {
+          hit.rewind();
+          hit.play();
+        }
+      })).start();
+      return side.reflect(v, p);
     } else {
+      (new Thread(new Runnable() {
+        public void run() {
+          miss.rewind();
+          miss.play();
+        }
+      })).start();
+      side.flash(new VisualCube.Color(200, 0, 0));
       return null;
     }
   }
   public boolean doesReflect(Vector v) {
-    return (leftX <= side.getVectorX(v) && rightX > side.getVectorX(v) && topY > side.getVectorY(v) && bottomY <= side.getVectorY(v));
+    return (leftX <= side.getVectorX(v)/100 && rightX >= side.getVectorX(v)/100 && topY >= side.getVectorY(v)/100 && bottomY <= side.getVectorY(v)/100);
   }
 
-  public void moveLeft() {
+  public synchronized void moveLeft() {
     if (leftX > 0) {
-      for (int i = bottomY; i < topY; i++) {
+      for (int i = bottomY; i <= topY; i++) {
         side.getPixel(rightX, i).removeElement(this);
       }
 
       leftX--;
       rightX--;
 
-      for (int i = bottomY; i < topY; i++) {
+      for (int i = bottomY; i <= topY; i++) {
         side.getPixel(leftX, i).setElement(this, color);
       }
     }
   }
 
-  public void moveRight() {
-    if (rightX < side.getWidth()) {
-      for (int i = bottomY; i < topY; i++) {
+  public synchronized void moveRight() {
+    if (rightX < side.getWidth()-1) {
+      for (int i = bottomY; i <= topY; i++) {
         side.getPixel(leftX, i).removeElement(this);
       }
 
       leftX++;
       rightX++;
 
-      for (int i = bottomY; i < topY; i++) {
+      for (int i = bottomY; i <= topY; i++) {
         side.getPixel(rightX, i).setElement(this, color);
       }
     }
   }
 
-  public void moveUp() {
-    if (topY < side.getHeight()) {
-      for (int i = leftX; i < rightX; i++) {
+  public synchronized  void moveUp() {
+    if (topY < side.getHeight()-1) {
+      for (int i = leftX; i <= rightX; i++) {
         side.getPixel(i, bottomY).removeElement(this);
       }
 
       topY++;
       bottomY++;
 
-      for (int i = leftX; i < rightX; i++) {
+      for (int i = leftX; i <= rightX; i++) {
         side.getPixel(i, topY).setElement(this, color);
       }
     }
   }
 
-  public void moveDown() {
+  public synchronized void moveDown() {
     if (bottomY > 0) {
-      for (int i = leftX; i < rightX; i++) {
-        side.getPixel(i, bottomY).removeElement(this);
+      for (int i = leftX; i <= rightX; i++) {
+        side.getPixel(i, topY).removeElement(this);
       }
 
       topY--;
       bottomY--;
 
-      for (int i = leftX; i < rightX; i++) {
-        side.getPixel(i, topY).setElement(this, color);
+      for (int i = leftX; i <= rightX; i++) {
+        side.getPixel(i, bottomY).setElement(this, color);
       }
     }
   }
@@ -111,7 +136,50 @@ class Racket extends Side {
     return side.getWidth();
   }
 
-  public void won() {
-    this.color = Color.RED;
+  public synchronized void won() {
+    this.color = new VisualCube.Color(200, 200, 0);
+    score.increment();
+    if (score.getScore() == (side.getHeight()-1)) {
+      side.flash(new VisualCube.Color(0, 200, 0));
+      cube.gameFinished();
+    }
+    refresh();
+  }
+  
+  public synchronized void lost() {
+    this.color = new VisualCube.Color(0, 0, 200);
+    refresh();
+  }
+  
+  public synchronized void setColor(VisualCube.Color color) {
+    this.color = color;
+    refresh();
+  }
+  
+  public void refresh() {
+    for (int x = leftX; x <= rightX; x++) {
+         for (int y = bottomY; y <= topY; y++) {
+          side.getPixel(x, y).setElement(this, color);
+         }
+        }
+  }
+  
+  class Score implements Element {
+    int score = 0;
+    public void increment() {
+      side.getPixel(0, score).setElement(this, new VisualCube.Color(150, 150, 150));
+      if (score < side.getHeight()-1) {
+        score++;
+      }
+    }
+    public int getScore() {
+      return score;
+    }
+    public void reset() {
+      score = 0;
+      for (int i = 0; i < side.getHeight(); i++) {
+        side.getPixel(0, i).removeElement(this);
+      }
+    }
   }
 }
