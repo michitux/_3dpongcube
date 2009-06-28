@@ -14,6 +14,8 @@ void setup() {
   cube.clear();
   cube.simulate(800, 800);
   Minim minim = new Minim(this);
+  AudioPlayer player = minim.loadFile("/home/michitux/pub/musik/suhov-symphaty_modul_ep/01_suhov-exx_fuck.mp3", 2048);
+  player.loop();
   pongcube = new HardwareCube(cube, minim);
 }
 
